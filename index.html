@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MediaPipe KNN - Live Train & Save</title>
+  <link rel="stylesheet" href="src/style.css">
+  <script defer type="module" src="src/main.js"></script>
+</head>
+
+<body>
+
+<section>
+  <h1>Camera training</h1>
+  <p>Status: <span id="status">Initializing...</span></p>
+
+  <div class="button-group">
+    <button id="webcamButton" disabled>START WEBCAM</button>
+    <button id="classifyButton" disabled>TEST GESTURE</button>
+  </div>
+
+  <div class="data-collection-box">
+    <h3>Collect & Manage Training Data</h3>
+    <p>Make the gesture, then click the corresponding button to add it.</p>
+    <button class="saveButton" data-label="rock" disabled>Save Rock</button>
+    <button class="saveButton" data-label="paper" disabled>Save Paper</button>
+    <button class="saveButton" data-label="scissors" disabled>Save Scissors</button>
+    <button class="saveButton" data-label="spock" disabled>Save Spock</button>
+    <button class="saveButton" data-label="lizard" disabled>Save Lizard</button>
+    <button class="saveButton" data-label="hat" disabled>Save Hat</button>
+    <button class="saveButton" data-label="knife" disabled>Save Knife</button>
+    <br>
+    <button id="trainButton" disabled>Train Model with Collected Data</button>
+    <span id="trainStatus"></span>
+    <br>
+    <button id="saveJsonButton" disabled>Save All Data to posedata.json</button>
+    <span id="accuracyStatus">Accuracy: N/A</span>
+
+
+    <p class="sample-counts">Samples in Memory:
+      Rock: <span id="count-rock">0</span> |
+      Paper: <span id="count-paper">0</span> |
+      Scissors: <span id="count-scissors">0</span> |
+      Spock: <span id="count-spock">0</span> |
+      Lizard: <span id="count-lizard">0</span> |
+      Hat: <span id="count-hat">0</span> |
+      Knife: <span id="count-knife">0</span> |
+      <b>Total: <span id="count-total">0</span></b>
+    </p>
+  </div>
+
+  <div id="predictionResult">Prediction: ?</div>
+
+  <div class="videoView">
+    <div class="video-canvas-container">
+      <video id="webcam" muted autoplay playsinline></video>
+      <canvas id="output_canvas"></canvas>
+    </div>
+  </div>
+</section>
+
+<img src="public/HandGuide.png" alt="Handguide image">
+</body>
+
+</html>
