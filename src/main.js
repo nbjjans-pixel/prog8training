@@ -109,10 +109,6 @@ function updateCounts() {
 
 
 function saveCurrentPose(label) {
-    if (!webcamRunning) {
-        alert("Please start the webcam first.");
-        return;
-    }
     if (!results || !results.landmarks || results.landmarks.length === 0) {
         alert("No hand detected.");
         return;
@@ -147,7 +143,7 @@ function trainModel() {
     testSet = currentTestSet;
 
 
-    machine = new kNear(K_VALUE);
+    machine = new kNear(K_VALUE);  //bovenaan aangegevn
     let trainedCount = 0;
 
 
@@ -155,7 +151,7 @@ function trainModel() {
     for (let item of trainingSet) {
         if (item.points && item.label && Array.isArray(item.points) && item.points.length === REQUIRED_POINTS) {
             try {
-                machine.learn(item.points, item.label);
+                machine.learn(item.points, item.label);  //ITEM EN LABEL!!!!!
                 trainedCount++;
             } catch(e) {
                 console.error("Error:", item, e);
@@ -193,7 +189,7 @@ function calculateAccuracy() {
                 if (prediction === trueLabel) {
                     correctPredictions++;
                 } else if (prediction === undefined){
-                    console.warn(`    -> Prediction was undefined for test sample:`, item);
+                    console.warn(item);
                 }
             } catch (error) {
                 console.error(`Error classifying test sample (${trueLabel}):`, error, item);
@@ -233,9 +229,9 @@ function classifyCurrentPose() {
     }
 
     try {
-        let prediction = machine.classify(currentPose);
+        let prediction = machine.classify(currentPose);  //vergelijken met alle trainings data
         console.log(`KNN Classification Result: ${prediction}`);
-        predictionElement.textContent = `Prediction: ${prediction || 'Unknown'}`;
+        predictionElement.textContent = `Prediction: ${prediction || 'Unknown'}`; //voorspelling handgebaar in index
         if (!prediction) {
             console.warn("KNN classify returned undefined. Check data/K value.");
         }
@@ -294,7 +290,7 @@ function saveDataToJsonFile() {
         alert("No data to save!");
         return;
     }
-
+    console.log("Data being saved to JSON:", collectedData); //de console log om de data doe opgelsagen is te laten zien
     try {
         const jsonString = JSON.stringify(collectedData, null, 2);
         const blob = new Blob([jsonString], { type: "application/json" });
@@ -316,7 +312,9 @@ function saveDataToJsonFile() {
 
 
 
-
+/********************************************************************
+ // CREATE THE POSE DETECTOR
+ ********************************************************************/
 const createHandLandmarker = async () => {
     statusElement.textContent = "Loading Hand Landmark Model...";
     try {
@@ -346,6 +344,9 @@ const createHandLandmarker = async () => {
 };
 
 
+/********************************************************************
+ // START THE WEBCAM
+ ********************************************************************/
 async function enableCam() {
     if (!handLandmarker) { console.log("Wait! HandLandmarker not loaded."); return; }
     if (webcamRunning) return;
@@ -384,7 +385,9 @@ function stopWebcam() {
     results = undefined; lastVideoTime = -1;
 }
 
-
+/********************************************************************
+ // START PREDICTIONS
+ ********************************************************************/
 async function predictWebcam() {
     if (!webcamRunning) return;
 
@@ -411,7 +414,7 @@ async function predictWebcam() {
         if (video.currentTime !== lastVideoTime) {
             lastVideoTime = video.currentTime;
             try {
-                results = await handLandmarker.detectForVideo(video, startTimeMs);
+                results = await handLandmarker.detectForVideo(video, startTimeMs); //code uitleg BELANGRIJK
             } catch (detectionError) {
                 console.error("Error during hand detection:", detectionError);
                 results = undefined;
@@ -421,13 +424,11 @@ async function predictWebcam() {
         canvasCtx.save();
         canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
         if (results && results.landmarks && results.landmarks.length > 0) {
-            for (const landmarks of results.landmarks) {
+            for (const landmarks of results.landmarks) {   //teken op de webca,m
 
                 if (drawUtils && HandLandmarker.HAND_CONNECTIONS) {
                     drawUtils.drawConnectors(landmarks, HandLandmarker.HAND_CONNECTIONS, { color: "#00FF00", lineWidth: 5 });
                     drawUtils.drawLandmarks(landmarks, { color: "#FF0000", radius: 5 });
-                } else {
-                    console.error("DrawingUtils or HandLandmarker.HAND_CONNECTIONS not available.");
                 }
             }
         }
@@ -451,12 +452,9 @@ classifyButton.addEventListener("click", classifyCurrentPose);
 saveJsonButton.addEventListener("click", saveDataToJsonFile);
 
 
+/********************************************************************
+ // START THE APP
+ ********************************************************************/
 if (navigator.mediaDevices?.getUserMedia) {
     createHandLandmarker();
-} else {
-    console.error("getUserMedia() is not supported.");
-    statusElement.textContent = "Webcam not supported.";
-    webcamButton.disabled = true; classifyButton.disabled = true; trainButton.disabled = true;
-    saveJsonButton.disabled = true; saveButtons.forEach(b => b.disabled = true);
-    accuracyStatusElement.textContent = "Accuracy: N/A";
 }
